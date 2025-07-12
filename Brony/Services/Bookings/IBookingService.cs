@@ -1,24 +1,22 @@
 using Brony.Domain;
+using Brony.Models;
+using Brony.Models.Bookings;
 
 namespace Brony.Services.Bookings;
 
 public interface IBookingService
 {
-    void Book(
-        int userId, 
-        int stadiumId, 
-        DateTime startDate, 
-        DateTime endDate);
+    void Book(BookingCreateModel createModel);
 
     void Cancel(int bookingId);
 
     void ChangeDateTime(int bookingId, DateTime startDate, DateTime endDate);
 
-    Booking Get(int id);
-    
+    BookingViewModel Get(int id);
+
     List<Booking> GetAll();
 
-    List<Booking> GetAllByUserId(int userId);
-    
-    List<Booking> GetAllByStadiumId(int stadiumId);
+    List<BookingViewModel> GetAllByUserId(int userId);
+
+    List<BookingViewModel> GetAllByStadiumId(int stadiumId);
 }

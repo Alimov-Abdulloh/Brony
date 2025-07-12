@@ -2,9 +2,8 @@
 
 public class PathHolder
 {
-    public const string UsersFilePath = "Data/Users.json";
-    public const string BookingsFilePath = "Data/Users.json";
-    public const string UserIdPath = "Data/UsersId.json";
-    public const string StadiumIdPath = "Data/StadiumId.json";
-    public const string BookingIdPath = "Data/BookingId.json";
+    private static readonly string parentRoot = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName;
+    public static readonly string UsersFilePath = Path.Combine(parentRoot, "Data", "users.txt");
+    public static readonly string BookingsFilePath = Path.Combine(parentRoot, "Data", "bookings.txt");
+    public static readonly string StadiumsFilePath = Path.Combine(parentRoot, "Data", "stadiums.txt");
 }

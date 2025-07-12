@@ -8,7 +8,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Compile Include="Data\users.txt" />
+      <Compile Include="Data\bookings.txt" />
+      <Compile Include="Data\staduims.txt" />
     </ItemGroup>
 
 </Project>

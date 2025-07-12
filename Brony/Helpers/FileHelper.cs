@@ -12,7 +12,7 @@ public static class FileHelper
         return File.ReadAllText(filePath);
     }
 
-    public static void WriteToFile<T>(string filePath, List<string> content)
+    public static void WriteToFile(string filePath, List<string> content)
     {
         File.WriteAllLines(filePath, content);
     }

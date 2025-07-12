@@ -1,5 +1,6 @@
 using Brony.Domain;
 using Brony.Models;
+using Brony.Models.Users;
 
 namespace Brony.Services.Users;
 
@@ -7,21 +8,15 @@ public interface IUserService
 {
     void Register(UserRegisterModel model);
 
-    int Login(string phoneNumber, string password);
+    int Login(UserLoginModel model);
     
-    User Get(int id);
+    UserViewModel Get(int id);
     
-    void Update(
-        int id, 
-        string firstName,
-        string lastName, 
-        string phoneNumber);
+    void Update(UserUpdateModel model);
     
     void Delete(int id);
     
-    List<User> GetAll();
-    
-    List<User> Search(string search);
+    List<UserViewModel> GetAll(string search);
     
     void ChangePassword(int userId, string oldPassword, string newPassword);
 }
