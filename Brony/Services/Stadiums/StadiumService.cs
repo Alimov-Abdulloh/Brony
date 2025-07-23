@@ -122,8 +122,6 @@ public class StadiumService : IStadiumService
         return stadiums;
     }
 
-    
-
     public List<Stadium> GetFilteredList(
         string location,
         decimal? price,
@@ -135,6 +133,8 @@ public class StadiumService : IStadiumService
         var locationResult = new List<Stadium>();
         var priceResult = new List<Stadium>();
         var dateTimeResult = new List<Stadium>();
+
+        var stadiums = new List<Stadium>();
 
         if (!string.IsNullOrEmpty(location))
         {
