@@ -60,6 +60,10 @@ public class BookingService : IBookingService
             }
         }
 
+        convertedBookings.Where(item =>
+            item.StadiumId == createModel.StadiumId &&
+            (item.StartTime < createModel.EndTime && item.EndTime > createModel.StartTime));
+
         double numberOfMatchHours = (endTimeOfMatch - startTimeOfMatch).TotalHours;
         decimal totalPrice = (decimal)numberOfMatchHours * existStadium.Price;
 

@@ -7,16 +7,10 @@ namespace Brony.Services.Users;
 public interface IUserService
 {
     void Register(UserRegisterModel model);
-
     int Login(UserLoginModel model);
-    
     UserViewModel Get(int id);
-    
-    void Update(UserUpdateModel model);
-    
+    void Update(int id, UserUpdateModel model);
     void Delete(int id);
-    
     List<UserViewModel> GetAll(string search);
-    
-    void ChangePassword(int userId, string oldPassword, string newPassword);
+    void ChangePassword(int id, string oldPassword, string newPassword);
 }

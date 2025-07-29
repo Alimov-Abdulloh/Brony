@@ -1,19 +1,22 @@
-﻿namespace Brony.Helpers;
+﻿using Newtonsoft.Json;
+
+namespace Brony.Helpers;
 
 public static class FileHelper
 {
-    public static string ReadFromFile(string filePath)
+    public static List<T> ReadFromFile<T>(string filePath)
     {
         if (!File.Exists(filePath))
         {
             File.Create(filePath).Close(); // Ensure the file exists
         }
-
-        return File.ReadAllText(filePath);
+        var text = File.ReadAllText(filePath);
+        return JsonConvert.DeserializeObject<List<T>>(text);
     }
 
-    public static void WriteToFile(string filePath, List<string> content)
+    public static void WriteToFile<T>(string filePath, List<T> source)
     {
-        File.WriteAllLines(filePath, content);
+        var json = JsonConvert.SerializeObject(source, Formatting.Indented);
+        File.WriteAllText(filePath, json);
     }
 }

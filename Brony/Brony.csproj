@@ -8,12 +8,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Compile Include="Data\bookings.txt" />
-      <Compile Include="Data\staduims.txt" />
+      <None Include="Data\bookings.json" />
+      <None Include="Data\staduims.json" />
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Extensions\" />
     </ItemGroup>
 
 </Project>

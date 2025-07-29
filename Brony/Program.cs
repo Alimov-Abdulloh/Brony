@@ -1,3 +1,5 @@
+using System.Collections;
+using System.ComponentModel.Design;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -9,82 +11,69 @@ using Brony.Models;
 using Brony.Models.Users;
 using Brony.Services.Users;
 using Newtonsoft.Json;
+using System.Linq;
 
 namespace Brony;
 
 public class Program
 {
-    static async Task Main(string[] args)
+    static void Main(string[] args)
     {
-        HttpClient httpClient = new HttpClient();
-
-        await Post(httpClient, new PostModel()
-        {
-            UserId = 2,
-            Body = "asdasd",
-            Title = "TETS"
-        });
+        // Quantifier operators
+        // 1. All
+        // 2. Any
+        // 3. Contains
         
-        await GetAll(httpClient);
-
-    }
-
-    static async Task Get(HttpClient client, int id)
-    {
-        var response = await client.GetAsync($"https://jsonplaceholder.typicode.com/posts/{id}");
+        // Aggregation operators
+        // 1. Average
+        // 2. Sum
+        // 3. Count
+        // 4. Max
+        // 5. Min
         
-        var content = await response.Content.ReadAsStringAsync();
-
-        var result = JsonConvert.DeserializeObject<TestResponseModel>(content);
-
-        Console.WriteLine($"Id: {result.Id} | UserId: {result.UserId} | Title: {result.Title} | Body: {result.Body}");
-    }
-    
-    static async Task GetAll(HttpClient client)
-    {
-        var response = await client.GetAsync("https://jsonplaceholder.typicode.com/posts");
+        // Sorting operators
+        // 1. Order
+        // 2. OrderBy
+        // 3. OrderByDescending
+        // 4. ThenBy
+        // 5. ThenByDescending
         
-        var content = await response.Content.ReadAsStringAsync();
-
-        var result = JsonConvert.DeserializeObject<List<TestResponseModel>>(content);
-
-        foreach (var item in result)
-        {
-            Console.WriteLine($"Id: {item.Id} | UserId: {item.UserId} | Title: {item.Title}\n");
-        }
-    }
-
-    static async Task Delete(HttpClient client, int id)
-    {
-        var response = await client.DeleteAsync($"https://jsonplaceholder.typicode.com/posts/{id}");
-
-        var content = await response.Content.ReadAsStringAsync();
-    }
-
-    static async Task Post(HttpClient client, PostModel model)
-    {
-        var json = JsonConvert.SerializeObject(model);
+        // Concatenation operator
+        // 1. Concat
         
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        // Projection operators
+        // 1. Select
+        // 2. SelectMany
         
-        await client.PostAsync("https://jsonplaceholder.typicode.com/posts", content);
-    }
+        // Grouping operators
+        // 1. GroupBy
+        // 2. ToLookup
 
-    static async Task Put(HttpClient client, int id, PostModel model)
-    {
-        var json = JsonConvert.SerializeObject(model);
+        // Joining operators
+        // 1. Join
+        // 2. GroupJoin
         
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        // Set operators
+        // 1. Distinct
+        // 2. Except
+        // 3. Intersect
+        // 4. Union
         
-        await client.PutAsync($"https://jsonplaceholder.typicode.com/posts/{id}", content);
-    }
-
-    static async Task Patch(HttpClient client, int id, PatchModel model)
-    {
-        var json = JsonConvert.SerializeObject(model);
+        // Partitioning operators
+        // 1. Take
+        // 2. TakeLast
+        // 3. TakeWhile
+        // 4. Skip
+        // 5. SkipLast
+        // 6. SkipWhile
         
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        // Equality Operator
+        // 1. SequenceEqual
         
-        await client.PatchAsync($"https://jsonplaceholder.typicode.com/posts/{id}", content);
+        // Generation Operators
+        // 1. DefaultIfEmpty
+        // 2. Empty
+        // 3. Range
+        // 4. Repeat
     }
 }
