@@ -11,7 +11,7 @@ public static class FileHelper
             File.Create(filePath).Close(); // Ensure the file exists
         }
         var text = File.ReadAllText(filePath);
-        return JsonConvert.DeserializeObject<List<T>>(text);
+        return JsonConvert.DeserializeObject<List<T>>(text) ?? Enumerable.Empty<T>().ToList();
     }
 
     public static void WriteToFile<T>(string filePath, List<T> source)

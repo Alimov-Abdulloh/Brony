@@ -1,101 +1,64 @@
 using Brony.Constants;
 using Brony.Domain;
-using Brony.Extensions;
+using Brony.Exceptions;
 using Brony.Helpers;
 using Brony.Models.Bookings;
-using Brony.Services.Stadiums;
-using Brony.Services.Users;
-using Brony.Services.Stadiums;
 
 namespace Brony.Services.Bookings;
 
 public class BookingService : IBookingService
 {
-    private readonly UserService userService;
-    private readonly StadiumService stadiumService;
-
-    public BookingService(UserService userService, StadiumService stadiumService)
-    {
-        this.userService = userService;
-        this.stadiumService = stadiumService;
-    }
-
     public void Book(BookingCreateModel createModel)
     {
-        string text = FileHelper.ReadFromFile(PathHolder.BookingsFilePath);
+        var bookings = FileHelper.ReadFromFile<Booking>(PathHolder.BookingsFilePath);
 
-        List<Booking> convertedBookings = text.ToBooking();
+        var users = FileHelper.ReadFromFile<User>(PathHolder.UsersFilePath);
+        var existUser = users.Find(u => u.Id == createModel.UserId)
+            ?? throw new NotFoundException("User not found");
 
-        // check user
+        var stadiums = FileHelper.ReadFromFile<Stadium>(PathHolder.StadiumsFilePath);
+        var existStadium = stadiums.Find(s => s.Id == createModel.StadiumId)
+            ?? throw new NotFoundException("Stadium not found");
 
-        var existUser = userService.Get(createModel.UserId);
+        if (existStadium.StartWorkingTime > createModel.StartTime.TimeOfDay ||
+            existStadium.EndWorkingTime < createModel.EndTime.TimeOfDay)
+            throw new ArgumentIsNotValidException(
+                $"Stadium does not work in this time period! | " +
+                $"Working time: {existStadium.StartWorkingTime} - {existStadium.EndWorkingTime}");
 
-        // check stadium
-        var existStadium = stadiumService.Get(createModel.StadiumId);
+        var res = bookings.Where(b =>
+            b.StadiumId == createModel.StadiumId &&
+            b.StartTime >= createModel.StartTime &&
+            b.EndTime <= createModel.EndTime);
 
-        // stadium working hours
-        TimeSpan startTimeOfStadium = TimeSpan.Parse(existStadium.StartWorkingTime);
-        TimeSpan endTimeOfStadium = TimeSpan.Parse(existStadium.EndWorkingTime);
-
-        //booking start and end time
-        TimeSpan startTimeOfMatch = createModel.StartTime.TimeOfDay;
-        TimeSpan endTimeOfMatch = createModel.EndTime.TimeOfDay;
-
-
-        if (startTimeOfStadium > startTimeOfMatch || endTimeOfStadium < endTimeOfMatch)
-        {
-            throw new Exception($"Stadium does not work in this time period! | " +
-                                $"Working time: {existStadium.StartWorkingTime} - {existStadium.EndWorkingTime}");
-        }
-
-        // check time which is not booked
-        foreach (var item in convertedBookings)
-        {
-            if (item.StadiumId == createModel.StadiumId)
-            {
-                if (item.StartTime < createModel.EndTime && item.EndTime > createModel.StartTime)
-                {
-                    throw new Exception("This stadium is already booked in this time");
-                }
-            }
-        }
-
-        convertedBookings.Where(item =>
-            item.StadiumId == createModel.StadiumId &&
-            (item.StartTime < createModel.EndTime && item.EndTime > createModel.StartTime));
-
-        double numberOfMatchHours = (endTimeOfMatch - startTimeOfMatch).TotalHours;
+        if (res.Any())
+            throw new NotFoundException("In this time, available stadiums are not found");
+        
+        double numberOfMatchHours = (createModel.EndTime - createModel.StartTime).TotalHours;
         decimal totalPrice = (decimal)numberOfMatchHours * existStadium.Price;
 
-        convertedBookings.Add(
-            new Booking
-            {
-                UserId = createModel.UserId,
-                StadiumId = createModel.StadiumId,
-                StartTime = createModel.StartTime,
-                EndTime = createModel.EndTime,
-                Price = totalPrice,
-            });
+        bookings.Add(new Booking()
+        {
+            UserId = createModel.UserId,
+            StadiumId = createModel.StadiumId,
+            StartTime = createModel.StartTime,
+            EndTime = createModel.EndTime,
+            Price = totalPrice,
+        });
 
-        File.WriteAllLines(PathHolder.BookingsFilePath, convertedBookings.ConvertToString());
+        FileHelper.WriteToFile(PathHolder.BookingsFilePath, bookings);
     }
 
     public void Cancel(int bookingId)
     {
-        string text = FileHelper.ReadFromFile(PathHolder.BookingsFilePath);
+        var bookings = FileHelper.ReadFromFile<Booking>(PathHolder.BookingsFilePath);
 
-        List<Booking> convertedBookings = text.ToBooking();
+        var existBooking = bookings.Find(x => x.Id == bookingId)
+            ?? throw new NotFoundException("Booking not found");
 
-        var existBooking = convertedBookings.Find(x => x.Id == bookingId);
+        bookings.Remove(existBooking);
 
-        if (existBooking == null)
-        {
-            throw new Exception("Booking was not found");
-        }
-
-        convertedBookings.Remove(existBooking);
-
-        File.WriteAllLines(PathHolder.BookingsFilePath, convertedBookings.ConvertToString());
+        FileHelper.WriteToFile(PathHolder.BookingsFilePath, bookings);
     }
 
     public void ChangeDateTime(int bookingId, DateTime startTime, DateTime endTime)
@@ -209,6 +172,15 @@ public class BookingService : IBookingService
         return result;
     }
 
+    public List<int> GetAvailableStadiumIdsByStartTime(DateTime dateTime)
+    {
+        throw new NotImplementedException();
+    }
+    
+    public List<int> GetAvailableStadiumIdsByEndTime(DateTime dateTime)
+    {
+        throw new NotImplementedException();
+    }
 }
 
 

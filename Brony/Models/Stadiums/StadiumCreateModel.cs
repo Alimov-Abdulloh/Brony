@@ -15,5 +15,7 @@ namespace Brony.Models.Stadiums
         public string Location { get; set; }
         public string PhoneNumber { get; set; }
         public string Description { get; set; }
+        public TimeSpan StartWorkingTime { get; internal set; }
+        public TimeSpan EndWorkingTime { get; internal set; }
     }
 }
