@@ -17,7 +17,7 @@ public class Stadium : BaseEntity
     public string Location { get; set; }
     public string PhoneNumber { get; set; }
     public string Description { get; set; }
-    public int BeforeCancellationTime { get; set; }
+    public int BeforeCancellationTimeInHours { get; set; }
     public TimeSpan StartWorkingTime { get; set; }
     public TimeSpan EndWorkingTime { get; set; }
 }

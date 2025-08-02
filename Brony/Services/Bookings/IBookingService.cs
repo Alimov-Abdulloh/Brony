@@ -14,7 +14,7 @@ public interface IBookingService
 
     BookingViewModel Get(int id);
 
-    List<Booking> GetAll();
+    List<BookingViewModel> GetAll();
 
     List<BookingViewModel> GetAllByUserId(int userId);
 

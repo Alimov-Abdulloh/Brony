@@ -29,27 +29,16 @@ public class StadiumService : IStadiumService
         if(!phoneValidation.IsValid)
             throw new ArgumentIsNotValidException(phoneValidation.Error);
         
-        convertedStadiums.Add(new Stadium
-        {
-            Name = stadiumCreateModel.Name,
-            PhoneNumber = stadiumCreateModel.PhoneNumber,
-            Description = stadiumCreateModel.Description,
-            Location = stadiumCreateModel.Location,
-            Length = stadiumCreateModel.Length,
-            Price = stadiumCreateModel.Price,
-            Width = stadiumCreateModel.Width,
-            StartWorkingTime = stadiumCreateModel.StartWorkingTime,
-            EndWorkingTime = stadiumCreateModel.EndWorkingTime
-        });
+        convertedStadiums.Add(stadiumCreateModel.Map());
         
         FileHelper.WriteToFile(PathHolder.StadiumsFilePath, convertedStadiums);    
     }
 
-    public void Update(StadiumUpdateModel model)
+    public void Update(int id, StadiumUpdateModel model)
     {
         var stadiums = FileHelper.ReadFromFile<Stadium>(PathHolder.StadiumsFilePath);
         
-        var existStadium = stadiums.Find(x => x.Id == model.Id)
+        var existStadium = stadiums.Find(x => x.Id == id)
             ?? throw new NotFoundException("Stadium is not found");
         
         var alreadyExistStadium = stadiums.Find(x => x.Name == model.Name);
@@ -60,13 +49,7 @@ public class StadiumService : IStadiumService
         if(!phoneValidation.IsValid)
             throw new ArgumentIsNotValidException(phoneValidation.Error);
 
-        existStadium.Name = model.Name;
-        existStadium.Location = model.Location;
-        existStadium.Length = model.Length;
-        existStadium.Width = model.Width;
-        existStadium.PhoneNumber = model.PhoneNumber;
-        existStadium.Price = model.Price;
-        existStadium.Description = model.Description;
+        existStadium.Map(model);
 
         FileHelper.WriteToFile(PathHolder.StadiumsFilePath, stadiums);
     }
@@ -83,17 +66,17 @@ public class StadiumService : IStadiumService
         FileHelper.WriteToFile(PathHolder.StadiumsFilePath, stadiums);
     }
 
-    public Stadium Get(int id)
+    public StadiumViewModel Get(int id)
     {
         var stadiums = FileHelper.ReadFromFile<Stadium>(PathHolder.StadiumsFilePath);
        
         var existStadium = stadiums.Find(x => x.Id == id)
             ?? throw new NotFoundException("Stadium is not found");
 
-        return existStadium;
+        return existStadium.Map();
     }
 
-    public List<Stadium> GetAll(
+    public List<StadiumViewModel> GetAll(
         string search,
         decimal? price,
         DateTime? startTime,
@@ -120,6 +103,9 @@ public class StadiumService : IStadiumService
         if (startTime != null)
         {
             var stadiumIds = bookingService.GetAvailableStadiumIdsByStartTime(startTime.Value);
+            if (stadiumIds is null || !stadiumIds.Any())
+                throw new NotFoundException("Stadiums are not available in this time");
+            
             stadiums = stadiums.Where(s => stadiumIds.Contains(s.Id)).ToList();
         }
 
@@ -127,9 +113,12 @@ public class StadiumService : IStadiumService
         if (endTime != null)
         {
             var stadiumIds = bookingService.GetAvailableStadiumIdsByEndTime(endTime.Value);
+            if (stadiumIds is null || !stadiumIds.Any())
+                throw new NotFoundException("Stadiums are not available in this time");
+            
             stadiums = stadiums.Where(s => stadiumIds.Contains(s.Id)).ToList();
         }
         
-        return stadiums;
+        return stadiums.Select(s => s.Map()).ToList();
     }
 }

@@ -21,26 +21,5 @@ public class Program
 {
     static void Main(string[] args)
     {
-        var service = new StadiumService(null);
-
-        try
-        {
-            service.Update(null);
-        }
-        catch (NotFoundException e)
-        {
-            Console.WriteLine(e.Message);
-            throw;
-        }
-        catch (ArgumentException e)
-        {
-            Console.WriteLine(e);
-            throw;
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
-        }
     }
 }

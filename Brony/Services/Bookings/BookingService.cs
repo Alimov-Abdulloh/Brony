@@ -1,6 +1,7 @@
 using Brony.Constants;
 using Brony.Domain;
 using Brony.Exceptions;
+using Brony.Extensions;
 using Brony.Helpers;
 using Brony.Models.Bookings;
 
@@ -26,25 +27,22 @@ public class BookingService : IBookingService
                 $"Stadium does not work in this time period! | " +
                 $"Working time: {existStadium.StartWorkingTime} - {existStadium.EndWorkingTime}");
 
-        var res = bookings.Where(b =>
+        var bookedBookings = bookings.Where(b =>
             b.StadiumId == createModel.StadiumId &&
             b.StartTime >= createModel.StartTime &&
             b.EndTime <= createModel.EndTime);
 
-        if (res.Any())
-            throw new NotFoundException("In this time, available stadiums are not found");
+        if (bookedBookings.Any())
+            throw new NotFoundException("This stadium is already booked at this time!");
         
         double numberOfMatchHours = (createModel.EndTime - createModel.StartTime).TotalHours;
         decimal totalPrice = (decimal)numberOfMatchHours * existStadium.Price;
 
-        bookings.Add(new Booking()
-        {
-            UserId = createModel.UserId,
-            StadiumId = createModel.StadiumId,
-            StartTime = createModel.StartTime,
-            EndTime = createModel.EndTime,
-            Price = totalPrice,
-        });
+        var mappedModel = createModel.Map();
+        
+        mappedModel.Price = totalPrice;
+        
+        bookings.Add(mappedModel);
 
         FileHelper.WriteToFile(PathHolder.BookingsFilePath, bookings);
     }
@@ -56,6 +54,15 @@ public class BookingService : IBookingService
         var existBooking = bookings.Find(x => x.Id == bookingId)
             ?? throw new NotFoundException("Booking not found");
 
+        var staduim = FileHelper.ReadFromFile<Stadium>(PathHolder.StadiumsFilePath)
+            .Find(s => s.Id == existBooking.StadiumId)
+            ?? throw new NotFoundException("Stadium not found");
+
+        var cancellationDateTime = existBooking.StartTime.AddHours(-staduim.BeforeCancellationTimeInHours);
+
+        if (DateTime.Now > cancellationDateTime)
+            throw new ArgumentIsNotValidException($"Now you can't cancel booking. You may cancel before {cancellationDateTime}");
+        
         bookings.Remove(existBooking);
 
         FileHelper.WriteToFile(PathHolder.BookingsFilePath, bookings);
@@ -63,123 +70,195 @@ public class BookingService : IBookingService
 
     public void ChangeDateTime(int bookingId, DateTime startTime, DateTime endTime)
     {
-        string text = FileHelper.ReadFromFile(PathHolder.BookingsFilePath);
+        var bookings = FileHelper.ReadFromFile<Booking>(PathHolder.BookingsFilePath);
 
-        List<Booking> convertedBookings = text.ToBooking();
+        var existBooking = bookings.Find(x => x.Id == bookingId)
+            ?? throw new NotFoundException("Booking not found");
 
-        var existBooking = convertedBookings.Find(x => x.Id == bookingId);
+        var staduim = FileHelper.ReadFromFile<Stadium>(PathHolder.StadiumsFilePath)
+            .Find(s => s.Id == existBooking.StadiumId) ?? throw new NotFoundException("Stadium not found");
 
-        if (existBooking == null)
-        {
-            throw new Exception("Booking was not found");
-        }
+        if (staduim.StartWorkingTime > startTime.TimeOfDay ||
+            staduim.EndWorkingTime < endTime.TimeOfDay)
+            throw new ArgumentIsNotValidException(
+                $"Stadium does not work in this time period! | " +
+                $"Working time: {staduim.StartWorkingTime} - {staduim.EndWorkingTime}");
+        
+        var cancellationDateTime = existBooking.StartTime.AddHours(-staduim.BeforeCancellationTimeInHours);
+        if (DateTime.Now > cancellationDateTime)
+            throw new ArgumentIsNotValidException($"Can't change time. You may change time before {cancellationDateTime}");
+        
+        var bookedBookings = bookings.Where(b =>
+            b.StadiumId == existBooking.StadiumId &&
+            b.StartTime >= startTime &&
+            b.EndTime <= endTime);
 
-        var existStadium = stadiumService.Get(existBooking.StadiumId);
-
-        // stadium working hours
-        TimeSpan startTimeOfStadium = TimeSpan.Parse(existStadium.StartWorkingTime);
-        TimeSpan endTimeOfStadium = TimeSpan.Parse(existStadium.EndWorkingTime);
-
-        //booking start and end time
-        TimeSpan startTimeOfMatch = startTime.TimeOfDay;
-        TimeSpan endTimeOfMatch = endTime.TimeOfDay;
-
-
-        if (startTimeOfStadium > startTimeOfMatch || endTimeOfStadium < endTimeOfMatch)
-        {
-            throw new Exception($"Stadium does not work in this time period! | " +
-                                $"Working time: {existStadium.StartWorkingTime} - {existStadium.EndWorkingTime}");
-        }
-
-        // check time which is not booked
-        foreach (var booking in convertedBookings)
-        {
-            if (booking.StadiumId == existBooking.StadiumId)
-            {
-                if (booking.StartTime < endTime && booking.EndTime > startTime)
-                {
-                    throw new Exception("This stadium is already booked in this time");
-                }
-            }
-        }
-
-        existBooking.StartTime = startTime;
+        if (bookedBookings.Any())
+            throw new NotFoundException("This stadium is already booked at this time!");
+        
         existBooking.EndTime = endTime;
+        existBooking.StartTime = startTime;
 
-        File.WriteAllLines(PathHolder.BookingsFilePath, convertedBookings.ConvertToString());
+        FileHelper.WriteToFile(PathHolder.BookingsFilePath, bookings);
     }
 
     public BookingViewModel Get(int id)
     {
-        string text = FileHelper.ReadFromFile(PathHolder.BookingsFilePath);
+        var bookings = FileHelper.ReadFromFile<Booking>(PathHolder.BookingsFilePath);
+        var users = FileHelper.ReadFromFile<User>(PathHolder.UsersFilePath);
+        var stadiums = FileHelper.ReadFromFile<Stadium>(PathHolder.StadiumsFilePath);
+        
+        var booking = bookings.Join(
+            users,
+            booking => booking.UserId,
+            user => user.Id,
+            (booking, user) => new { booking, user })
+            .Join(
+                stadiums, 
+                temp => temp.booking.StadiumId,
+                stadium => stadium.Id,
+                (temp, stadium) => new BookingViewModel
+                {
+                    Id = temp.booking.Id,
+                    UserFirstName = temp.user.FirstName,
+                    UserLastName = temp.user.LastName,
+                    UserPhone = temp.user.PhoneNumber,
+                    Price = temp.booking.Price,
+                    StartTime = temp.booking.StartTime,
+                    EndTime = temp.booking.EndTime,
+                    StadiumName = stadium.Name,
+                })
+            .FirstOrDefault(b => b.Id == id);
 
-        List<Booking> convertedBookings = text.ToBooking();
-
-        var existBooking = convertedBookings.Find(x => x.Id == id);
-
-        if (existBooking == null)
-        {
-            throw new Exception("Booking is not found");
-        };
-
-        return existBooking.ToBookingViewModel();
+        return booking;
     }
 
-    public List<Booking> GetAll()
+    public List<BookingViewModel> GetAll()
     {
-        string text = FileHelper.ReadFromFile(PathHolder.BookingsFilePath);
+        var bookings = FileHelper.ReadFromFile<Booking>(PathHolder.BookingsFilePath);
+        var users = FileHelper.ReadFromFile<User>(PathHolder.UsersFilePath);
+        var stadiums = FileHelper.ReadFromFile<Stadium>(PathHolder.StadiumsFilePath);
 
-        List<Booking> convertedBookings = text.ToBooking();
+        var result = bookings.Join(
+                users,
+                booking => booking.UserId,
+                user => user.Id,
+                (booking, user) => new { booking, user })
+            .Join(
+                stadiums,
+                temp => temp.booking.StadiumId,
+                stadium => stadium.Id,
+                (temp, stadium) => new BookingViewModel
+                {
+                    Id = temp.booking.Id,
+                    UserFirstName = temp.user.FirstName,
+                    UserLastName = temp.user.LastName,
+                    UserPhone = temp.user.PhoneNumber,
+                    Price = temp.booking.Price,
+                    StartTime = temp.booking.StartTime,
+                    EndTime = temp.booking.EndTime,
+                    StadiumName = stadium.Name,
+                });
 
-        return convertedBookings;
+        return result.ToList();
     }
 
     public List<BookingViewModel> GetAllByUserId(int userId)
     {
-        string text = FileHelper.ReadFromFile(PathHolder.BookingsFilePath);
+        var user = FileHelper.ReadFromFile<User>(PathHolder.UsersFilePath)
+            .Find(u => u.Id == userId)
+            ?? throw new NotFoundException("User not found");
+       
+        var bookings = FileHelper.ReadFromFile<Booking>(PathHolder.BookingsFilePath)
+            .Where(b => b.UserId == userId)
+            .ToList();
+        
+        var stadiums = FileHelper.ReadFromFile<Stadium>(PathHolder.StadiumsFilePath);
 
-        List<Booking> convertedBookings = text.ToBooking();
-
-        var result = new List<BookingViewModel>();
-
-        foreach (var booking in convertedBookings)
-        {
-            if (booking.UserId == userId)
+        var result = bookings.Join(
+            stadiums,
+            booking => booking.StadiumId,
+            stadium => stadium.Id,
+            (booking, stadium) => new BookingViewModel
             {
-                result.Add(booking.ToBookingViewModel());
-            }
-        }
-
+                Id = booking.Id,
+                StartTime = booking.StartTime,
+                EndTime = booking.EndTime,
+                Price = booking.Price,
+                StadiumName = stadium.Name,
+                UserFirstName = user.FirstName,
+                UserLastName = user.LastName,
+                UserPhone = user.PhoneNumber,
+            })
+            .ToList();
+        
         return result;
     }
 
     public List<BookingViewModel> GetAllByStadiumId(int stadiumId)
     {
-        string text = FileHelper.ReadFromFile(PathHolder.BookingsFilePath);
+        var stadium = FileHelper.ReadFromFile<Stadium>(PathHolder.StadiumsFilePath)
+            .Find(s => s.Id == stadiumId)
+            ?? throw new NotFoundException("Stadium not found");
+        
+        var bookings = FileHelper.ReadFromFile<Booking>(PathHolder.BookingsFilePath)
+            .Where(b => b.StadiumId == stadiumId)
+            .ToList();
 
-        List<Booking> convertedBookings = text.ToBooking();
+        var users = FileHelper.ReadFromFile<User>(PathHolder.UsersFilePath);
 
-        var result = new List<BookingViewModel>();
-
-        foreach (var item in convertedBookings)
-        {
-            if (item.StadiumId == stadiumId)
+        var result = bookings.Join(
+            users,
+            booking => booking.UserId,
+            user => user.Id,
+            (booking, user) => new BookingViewModel
             {
-                result.Add(item.ToBookingViewModel());
-            }
-        }
-
+                Id = booking.Id,
+                UserFirstName = user.FirstName,
+                UserLastName = user.LastName,
+                UserPhone = user.PhoneNumber,
+                Price = booking.Price,
+                StartTime = booking.StartTime,
+                EndTime = booking.EndTime,
+                StadiumName = stadium.Name,
+            })
+            .ToList();
+        
         return result;
     }
 
     public List<int> GetAvailableStadiumIdsByStartTime(DateTime dateTime)
     {
-        throw new NotImplementedException();
+        var bookings = FileHelper.ReadFromFile<Booking>(PathHolder.BookingsFilePath);
+        
+        var stadiumIds = FileHelper.ReadFromFile<Stadium>(PathHolder.StadiumsFilePath)
+            .Select(s => s.Id);
+
+        var bookedBookings = bookings.Where(b =>
+                stadiumIds.Contains(b.StadiumId) &&
+                b.StartTime >= dateTime)
+            .Select(b => b.StadiumId);
+
+        var result = stadiumIds.Except(bookedBookings).ToList();
+        
+        return result;
     }
     
     public List<int> GetAvailableStadiumIdsByEndTime(DateTime dateTime)
     {
-        throw new NotImplementedException();
+        var bookings = FileHelper.ReadFromFile<Booking>(PathHolder.BookingsFilePath);
+        
+        var stadiumIds = FileHelper.ReadFromFile<Stadium>(PathHolder.StadiumsFilePath)
+            .Select(s => s.Id);
+
+        var bookedBookings = bookings.Where(b =>
+                stadiumIds.Contains(b.StadiumId) &&
+                b.StartTime <= dateTime)
+            .Select(b => b.StadiumId);
+
+        var result = stadiumIds.Except(bookedBookings).ToList();
+        
+        return result;
     }
 }
 

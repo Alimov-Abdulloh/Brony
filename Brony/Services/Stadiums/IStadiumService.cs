@@ -7,10 +7,10 @@ namespace Brony.Services.Stadiums;
 public interface IStadiumService
 {
     void Create(StadiumCreateModel stadiumCreateModel);
-    void Update(StadiumUpdateModel stadiumUpdateModel);
+    void Update(int id, StadiumUpdateModel stadiumUpdateModel);
     void Delete(int id);
-    Stadium Get(int id);
-    List<Stadium> GetAll(
+    StadiumViewModel Get(int id);
+    List<StadiumViewModel> GetAll(
         string search,
         decimal? price,
         DateTime? startTime,

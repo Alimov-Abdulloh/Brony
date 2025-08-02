@@ -8,7 +8,10 @@ namespace Brony.Models.Bookings
 {
     public class BookingViewModel
     {
-        public string User { get; set; }
+        public int Id { get; set; }
+        public string UserFirstName { get; set; }
+        public string UserLastName { get; set; }
+        public string UserPhone { get; set; }
         public string StadiumName { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }

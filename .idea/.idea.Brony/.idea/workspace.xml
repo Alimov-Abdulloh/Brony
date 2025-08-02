@@ -9,16 +9,21 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8c8f044f-0b21-4c89-97a1-bfc7b4f3280a" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Brony/Exceptions/AlreadyExistException.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Brony/Exceptions/NotFoundException.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Brony/Extensions/StringExtensions.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Brony/Brony.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Brony/Brony.csproj" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Brony/Extensions/MapExtensions.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Brony/Models/Stadiums/StadiumViewModel.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Brony/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Brony/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Brony/Domain/Stadium.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Brony/Domain/Stadium.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Brony/Helpers/FileHelper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Brony/Helpers/FileHelper.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Brony/Helpers/GeneratorHelper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Brony/Helpers/GeneratorHelper.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Brony/Models/BaseModel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Brony/Models/Common/BaseModel.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Brony/Models/Bookings/BookingViewModel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Brony/Models/Bookings/BookingViewModel.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Brony/Models/Stadiums/StadiumCreateModel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Brony/Models/Stadiums/StadiumCreateModel.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Brony/Models/Stadiums/StadiumUpdateModel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Brony/Models/Stadiums/StadiumUpdateModel.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Brony/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Brony/Program.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Brony/Services/Bookings/BookingService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Brony/Services/Bookings/BookingService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Brony/Services/Bookings/IBookingService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Brony/Services/Bookings/IBookingService.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Brony/Services/Stadiums/IStadiumService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Brony/Services/Stadiums/IStadiumService.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Brony/Services/Stadiums/StadiumService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Brony/Services/Stadiums/StadiumService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Brony/Services/Users/UserService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Brony/Services/Users/UserService.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -123,7 +128,7 @@
       <workItem from="1753190895280" duration="3026000" />
       <workItem from="1753193997228" duration="5028000" />
       <workItem from="1753327065602" duration="9105000" />
-      <workItem from="1753500071485" duration="25464000" />
+      <workItem from="1753500071485" duration="34573000" />
     </task>
     <servers />
   </component>

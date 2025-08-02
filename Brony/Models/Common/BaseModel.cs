@@ -1,4 +1,4 @@
-namespace Brony.Models;
+namespace Brony.Models.Common;
 
 public class BaseModel
 {

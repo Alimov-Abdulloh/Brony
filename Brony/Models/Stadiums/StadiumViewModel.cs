@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Brony.Models.Stadiums;
 
-public class StadiumUpdateModel
+public class StadiumViewModel
 {
+    public int Id { get; set; }
     public string Name { get; set; }
     public float Width { get; set; }
     public float Length { get; set; }
@@ -16,6 +11,6 @@ public class StadiumUpdateModel
     public string PhoneNumber { get; set; }
     public string Description { get; set; }
     public int BeforeCancellationTimeInHours { get; set; }
-    public TimeSpan StartWorkingTime { get; internal set; }
-    public TimeSpan EndWorkingTime { get; internal set; }
+    public TimeSpan StartWorkingTime { get; set; }
+    public TimeSpan EndWorkingTime { get; set; }
 }
